@@ -71,12 +71,48 @@ main:
 		jal	PMAT 
 
 # Your CODE HERE
+# Vars:
+# $s1 = N
+# $t0 = i
+# $t1 = j
+# $t2 = k
+# $t3 = value of A
+# $t4 = value of B/value of A*B
+# $t5 = value of C+A*B
+# $t6 = address of word being altered or acquired
 
+		li $t0, -1
+LOOPA:	addi $t0, $t0, 1
+		bge $t0, $s1, END
 
+		li $t1, -1
+LOOPB:  addi $t1, $t1, 1
+		bge $t1, $s1, LOOPA
+
+		li $t2, -1
+LOOPC:  addi $t2, $t2, 1
+		bge $t2, $s1, LOOPB
+		mulo $t6, $t0, $s1
+		add $t6, $t6, $t2
+		sll $t6, $t6, 2
+		lw $t3, amat($t6)		# A[i][k
+		mulo $t6, $t2, $s1
+		add $t6, $t6, $t1
+		sll $t6, $t6, 2
+		lw $t4, bmat($t6)		# B[k][j]
+		mulo $t4, $t4, $t3		# A[i][k] * B[k][j]
+		mulo $t6, $t0, $s1
+		add $t6, $t6, $t1
+		sll $t6, $t6, 2
+		lw $t5, cmat($t6)
+		add $t5,$t5,$t4			# C[i][j] =  C[i][j]+A[i][k] * B[k][j]
+		sw $t5, cmat($t6)
+		b LOOPC
+		
 
 # End CODE
 
-		la	$a0, msgc
+END:	la	$a0, msgc
 		la 	$a1, cmat
 		jal	PMAT 
 

@@ -1,2 +1,3 @@
 .data
-.half 14646, 0x8EAF,0x1234,-49,
+
+.asciiz "4321"
