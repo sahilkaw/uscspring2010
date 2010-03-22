@@ -71,23 +71,68 @@ main:
 		jal	PMAT 
 
 # YOUR CODE HERE
+# Vars:
+# $s0 = block size
+# $s1 = N
+# $t0 = i
+# $t1 = j
+# $t2 = k
+# $t3 = ii
+# $t4 = jj
+# $t5 = kk
+# $t6 = value of A
+# $t7 = value of B/value of A*B
+# $t8 = value of C+A*B
+# $t9 = address of word being altered or acquired/conditional
 
+		sub $t0, $0, $s0
+LOOPA:	add $t0, $t0, $s0
+		bge $t0, $s1, END
 
+		sub $t1, $0, $s0
+LOOPB:  add $t1, $t1, $s0
+		bge $t1, $s1, LOOPA
 
+		sub $t2, $0, $s0
+LOOPC:  add $t2, $t2, $s0
+		bge $t2, $s1, LOOPB
 
+		addi $t3, $t0,-1
+LOOPD:  addi $t3, $t3, 1
+		add $t9, $t0, $s0
+		bge $t3, $t9, LOOPC
 
+		addi $t4, $t1,-1
+LOOPE:  addi $t4, $t4, 1
+		add $t9, $t1, $s0
+		bge $t4, $t9, LOOPD
 
+		addi $t5, $t2,-1
+LOOPF:  addi $t5, $t5, 1
+		add $t9, $t2, $s0
+		bge $t5, $t9, LOOPE
 
+		mulo $t9, $t3, $s1
+		add $t9, $t9, $t5
+		sll $t9, $t9, 2
+		lw $t6, amat($t9)		# A[ii][kk]
+		mulo $t9, $t5, $s1
+		add $t9, $t9, $t4
+		sll $t9, $t9, 2
+		lw $t7, bmat($t9)		# B[kk][jj]
+		mulo $t7, $t7, $t6		# A[ii][kk] * B[kk][jj]
+		mulo $t9, $t3, $s1
+		add $t9, $t9, $t4
+		sll $t9, $t9, 2
+		lw $t8, cmat($t9)
+		add $t8,$t8,$t7			# C[ii][jj] =  C[ii][jj]+A[ii][kk] * B[kk][jj]
+		sw $t8, cmat($t9)
+		b LOOPF
+		
 
+# End CODE
 
-
-
-
-
-
-# END CODE
-	
-		la	$a0, msgc
+END:	la	$a0, msgc
 		la 	$a1, cmat
 		jal	PMAT 
 
