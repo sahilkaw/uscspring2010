@@ -19,8 +19,12 @@ void *mult_thread(void *threadid)
   int i, j, k;
   unsigned int tid;
   tid = (unsigned long long) threadid & 0xffffffff;
-  int tstart = 0;
-  int tfinish = SIZE;
+  //int tstart = 0;
+  //int tfinish = SIZE;
+  int tstart = ((double)tid/num_threads)*SIZE;
+  int tfinish = tstart+((double)1/num_threads*SIZE);
+  if (tfinish>SIZE)
+	tfinish = SIZE;
 
   printf("In thread %d\n", tid);
   for(i = tstart; i < tfinish; i++) {

@@ -10,7 +10,7 @@ int num_threads;
 int A[SIZE][SIZE];
 int B[SIZE][SIZE];
 int C[SIZE][SIZE];
-pthread_mutex_t C_lock[SIZE][SIZE];
+pthread_spinlock_t C_lock[SIZE][SIZE];
 int Aref[SIZE][SIZE];
 int Bref[SIZE][SIZE];
 int Cref[SIZE][SIZE];
@@ -20,19 +20,28 @@ void *mult_thread(void *threadid)
   int i, j, k, temp_sum;
   unsigned int tid;
   tid = (unsigned long long) threadid & 0xffffffff;
-  int tstart = 0;
-  int tfinish = SIZE;
+  /*int tstart = 0;
+  int tfinish = SIZE;*/
+  int tstart = ((double)tid/num_threads)*SIZE;
+  int tfinish = tstart+((double)1/num_threads*SIZE);
+  if (tfinish>SIZE)
+	tfinish = SIZE;
 
   printf("In thread %d\n", tid);
 
   for(i=0; i < SIZE; i++) {
-    for(j = 0; j < SIZE; j++) {
-      for(k = tstart; k < tfinish; k++) {
-	pthread_mutex_lock(&C_lock[i][j]);
-	C[i][j] = C[i][j] + A[i][k]*B[k][j];
-	pthread_mutex_unlock(&C_lock[i][j]);
-      }
-    }
+		for(j = 0; j < SIZE; j++) {
+			temp_sum = 0;
+			for(k = tstart; k < tfinish; k++) {
+				//pthread_spin_lock(&C_lock[i][j]);
+				//C[i][j] = C[i][j] + A[i][k]*B[k][j];
+				//pthread_spin_unlock(&C_lock[i][j]);
+				temp_sum = temp_sum + A[i][k]*B[k][j];
+			}
+			pthread_spin_lock(&C_lock[i][j]);
+			C[i][j] = C[i][j] + temp_sum;
+			pthread_spin_unlock(&C_lock[i][j]);
+		}
   }
   return 0;
 
@@ -64,7 +73,7 @@ int main(int argc, char *argv[])
       A[i][j] = Aref[i][j] = i*SIZE+j;
       B[i][j] = Bref[i][j] = j*SIZE+i;
       C[i][j] = Cref[i][j] = 0;
-      pthread_mutex_init(&C_lock[i][j], NULL);
+      pthread_spin_init(&C_lock[i][j], NULL);
     }
   }
 
@@ -115,7 +124,7 @@ int main(int argc, char *argv[])
   count = 0;
   for(i = 0; i < SIZE; i++) {
     for(j = 0; j < SIZE; j++)	{
-      pthread_mutex_destroy(&C_lock[i][j]);
+      pthread_spin_destroy(&C_lock[i][j]);
       if(Cref[i][j] != C[i][j]){
 	count++;
       }
