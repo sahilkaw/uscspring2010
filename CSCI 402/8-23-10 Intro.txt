@@ -1,0 +1,36 @@
+How to work the projects
+Week 1: Understand the theory thoroughly
+	Design is important
+Week 2: Start coding
+	Iterative programming
+Week 3: Remaining code - each partner and integrate
+
+All projects are submitted electronically using 402submit program
+THey are due on Sundays at 11.59.59pm
+
+Project Grading
+Writeup - 20%
+Comments - 10%
+Tests - 20%
+execution - 50%
+
+Projects
+Are team-based: 2 or 3 students
+Register your team -email me
+	Student full name
+	usc email
+
+Nachos Simulator
+written in c/c++
+Simulates an OS
+runs on solaris Unix
+Download Nachos into your Unix accounts and install it
+ 
+Nachos Documentation
+Roadmap - high-level
+Student documentation
+
+Unneeded files
+.obj fiels
+temporary files
+executable/core files

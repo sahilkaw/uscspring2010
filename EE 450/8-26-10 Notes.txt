@@ -1,0 +1,19 @@
+always on = passively open 
+p2p has a dedicated server that has the addresses of the peers
+P2p Problem
+NiC = Network interface Card
+MAC = Media Access Control
+MAC address
+HUB not able to recognize addresses
+	Sends data to everyone 
+	Not meant to connect to the outside network	
+Router able to recognize addresses
+	Separate from outer/Inner
+Mesh = fully connected
+Topology = Shared (Broadcast)/ Taps
+RJ = Registered Jack
+ad-hoc = communicating within the same vicinity
+	 very quick
+	 not able to associate with internet
+	 wireless
+RFC = Request for comment
