@@ -1,0 +1,32 @@
+pstn: public switch telephone network
+circuit switching
+packet switching
+dsl: digital
+HPDPS: high speed data packet access - at&t
+EDO: Evolution data only/optimum - verizon
+S&F: Store and forward
+Tier 1: global isps sprint/At&t/verizon
+NAP: Network access points (take traffic from one tier to the other)
+T1: digital, very reliable. Csu/dsu
+csu: channel service unit
+dsu: digital service unit
+t3: 45 MBsp
+OC3: 155MBsp
+oC192: 10GBps
+SOnet: Syncrynous optimum network/ Gbinternet switch
+POP: Point of Presence
+
+Delay (latentcy): secs
+	deterministic (equation to plug in and calculate)
+		Transmission Time = length of msg (bits)/Bit (data) rate (bps)
+			is the time elapsed from the time you transmit the first bit of the message til the time you transmit the last bit of message.
+		Propogation delay = length of the link(m) / speed of propogation(m/s)
+			speed of propogation is usually speed of light
+			is the time elapsed from the moment a bit is transmitted til the moment that bit is received.
+	Random (deal with it in probability fashion)
+		Processing Delay
+		Queueing
+Throughput: bps
+
+fixed one kill endmission
+asw_marine_ff_absorption

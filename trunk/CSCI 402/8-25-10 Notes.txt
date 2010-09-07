@@ -1,0 +1,86 @@
+Unix tutorial/nachos install
+
+SAL 109
+SAL 126
+Tuesday
+5.30 - 7
+7 - 8.30
+
+SAL 109
+Wednesday
+5.30 - 7
+7 - 8.30
+
+Simple OS (uniprogrammed)
+1 user at a time
+1 program at a time
+Ex: DOS, Nachos
+Result: No security
+
+Sharing the Computer (multiprogrammed)
+Multiple users
+Multiple programs
+Need security between user programs
+OS is responsible for security
+
+OS key objective: Keep as many resources on the computer as busy as possible
+To do this: The OS must switch efficiently (context switch) between user programs
+Context switch: We are switching the CPU from running one user program to running a different user program
+Context switching must be transparent to the user program.
+
+When to context switch?
+When a user program requests a "slow" operation
+When a user program finishes
+When a new user program arrives (optional)
+When a maximum amount of time has occurred -> Time slice (optional)
+
+Context Switching allow for concurrency.
+Concurrency: User programs can behave as if they have the computers to themself.
+Result: On a context switch, the OS must "remember" the user program context (state) when being evicted from the CPU
+
+We will use the concept of Process.
+OSes manage processes, NOT user programs.
+The process is used to keep track of all the "things" an OS must remember about the state of a user program.
+
+3 Main parts to a Process
+1. Code/Data
+2. Allocated resources
+3. Book keeping information for context switch
+	CPU registers
+	Other OS-specific data
+
+Proccesses have 4 states
+New: Process has just been created. Not completely set-up for CPU execution yet, as a user program.
+Ready: Process isready for the CPU; waiting its turn
+Running: Process currently executing the CPU
+Blocked: Process cannot use the CPU until some event occurs
+
+Processes have a "problem" (based on our design)
+Processes have 2 "internal actions"
+1. Executing code
+	single execution stream
+2. Grouping of resources for access by programs
+
+Current process design only allows for a single execution stream
+
+Process A					Process Z
++---------------+				+---------------+
+| resources A   |				| resources A   |
+| exec stream A |	..................	| exec stram Z  |
+| CPU State     |				| CPU state     |
+|               |				|               |
++---------------+				+---------------+
+
+Race condition: Sharing of resources can cause problems
+
+Example 
+int i;	// i is shared
+Process A			Process B
+1. i = 0;				3. i = 10;
+2. i++;				4. i--;
+1->2				3->4
+
+1,2,3,4		9
+3,4,1,2		1
+1,3,2,4		10
+3,1,4,2		0

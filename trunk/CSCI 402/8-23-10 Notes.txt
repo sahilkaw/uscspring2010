@@ -1,0 +1,32 @@
+Intorduction to Operating System
+
+Primary Goal: Make a computer easier to use.
+
+Problem: OSes must interface between people on one side
+	 and computer hardware on the other side.
+
+This makes OSes complex.
+Design tradeoffs are necessary.
+
+What is an OS?
+A virtual Machine - hide details
+
+users
+APplications Programs
+--------------
+Virtual interface
+
+---------------
+OS Kernel
+--------------
+Hardware interface (Device Drivers)
+
+--------------
+Hardware
+
+5 Major Components to an OS (top 3 most of the time)
+CPU Scheduling
+File System
+Memory Management
+Networking
+Security

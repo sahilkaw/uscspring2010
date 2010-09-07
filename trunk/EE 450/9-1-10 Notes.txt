@@ -1,0 +1,35 @@
+demand exceeds supply = dropping packets
+Overview pg65 = ee465 not in this course
+	explains why packets are dropped
+End to end delay = tranfser time
+	random because one part of it is random (queueing and processing)
+RTT: round trip time/ response time
+	sometimes calculated from the end of the transmission msg
+	sometimes calculates as the sum of the forward and backward propogation time.
+
+Throughput = 	length of message (bits) / RTT
+bit (delay) rate = 	length of message (bits) / Transmission time
+Bandwith = units in Hz
+Bit rate = units in bps
+bandwidth and values are about the same except units are different
+Capacity = amount you can transfer reliably
+1 byte = 8 bits
+Pipe size = bandwidth x delay
+
+Layered architecture
+protocol: a set of communications between entities for the purpose of timely delivered presentation.
+Order of protocol must be very clear.
+Standard: allowing all manufacturers to develop something to all standards.
+	  Takes too long for somehting to be standarized.
+
+Memorize 7 layers of OSI
+Network related layers = 1-3
+SAP: Service access points
+
+NH = network header
+	source ip adress
+	destination ip adress 
+Packet = NH + data (layer 3 - network)
+Frame = DLH + packet + Data link trailer (layer 2 - data link)
+MAC = Media access control
+RAW = no Structure

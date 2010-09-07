@@ -1,0 +1,105 @@
+End of last lecture:
+Application programmers want to be able to build programs using multiple execution streams and have them work together.
+This creates the possibilityof Race conditions.
+
+Key Question: How does the OS allow multiple execution streams to share data?
+Mechanisms for sharing data between execution streams (between processes)
+1. Message passing
+	Requires a system call so the OS can perform the data sharing .transfer between 2 processes
+	Disadv: The OS must run code every sharing event.
+2. Global Memory
+	Processes can request a "special" clock of memory that can be shared. All authorized processes share this block of memory.
+	Disadv: Still requires OS involvement at startup time.
+Better Solution: Have a away for multiple execution streams to share data requiring "no" extra work by OS.
+	Threads: Allow multiple execution streams inside a single process.
+
+** Missing data **
+How does the OS track thread?
+	Each thrread has its own CPU state in their process
+CPU scheduler now schedules threads
+
+Restaurant (Single execution stream)
+Process
+1. Customer arrives
+2. Employee takes the order
+3. Employee cooks food
+4. Employee bags food
+5. Employee takes money
+6. Customer gets food and leaves
+
+Multithreading is like having multiple, specialized employees
+	Each thread performs its own tasks
+	Cooperration occurs **Missing data**
+
+**Missing data**
+Why are multiple execution streams, in a  process, a better solution?
+int i;
+void myThread1(){
+	i=0;
+	i++
+}
+
+void myThread2(){
+	i = 10
+	i--;
+}
+
+void main(){
+	// Make a thread using myThread1
+	// Make a thread using myThread2
+}
+
+Result: A process contains
+1. A grouping of resources.
+2. One, or more, execution streams.
+3. CPUstate saved seperately for each thread.
+
+About race Conditions:
+Rule: Sequential execution within an execution stream
+**Missing data**
+
+3 Issues
+1. How to share data? already asnwered
+2. How do we ensure threads, in a process, execute one at a time?
+3. How to ensure proper sequencing of events?
+
+2&3 Big Problem
+
+2 Ways to use Threads
+1. Can be independent of each other
+2. Cooperate TOgether
+	share data
+	**Missing Data**
+
+
+Simple Concurrent Problem
+	int x = 0, y = 0,; // global
+Thread A			Thread B
+.				.
+.				.
+.				.
+.				.
+1. x = 1;				.
+.				4. y = 0;
+.				.
+.				.
+2. x = 0;			.
+.				.
+.				.
+.				5. x =  y + 2;
+.				6. if ( x! = 0){
+3. y = x + 1;			7. 	y = 3/x;}
+
+
+Execution order (No control)
+......6 , 2 , 7 ......
+Fix: Needs to access x & y one at a time
+
+Atomic Operation
+One, or more, tasks that execute as a "single opertion" cant be split up (No intereference with shared data).
+
+Critical Region (Critical Section)
+A section of code that utlizes shared resources mostly for threads (shared data).
+We use atomic operations to control access to critical regions.
+If we do this properly, we can solve issues 2 & 3.
+

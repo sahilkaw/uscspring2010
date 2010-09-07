@@ -1,0 +1,22 @@
+Office: phe418
+-----------------
+analog -> digital -> analog
+t/x = transmitter
+bits = binary digits
+
+t/x----------------r/x
+^		    ^
+|		    |
+|		    |
+|		    |
+clock		  clock
+
+PSTN = Public Switch Telephone Network
+
+Network "Cloud"
+-------------
+end system "host"
+dedicated facilities
+network nodes: switches, routers
+shared facilities "trunks"
+

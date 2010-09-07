@@ -1,0 +1,217 @@
+Last Time
+Defined: Atomic Operation & mutual exclusion *missing data*
+
+Mutual Exclusion
+If one thread is in a critical region, no other thread in the smae process, is allowed to enter that critical region. Other threads must wait while one thread is accessing the data.
+
+4 Neccessary Conditions for M.E.
+1. Only 1 thread in a CR at a a time.
+2. No thread should wait forever to enter a CR.
+3. No assumptions about cpu speed.
+4. No thread outside a CR can block a thread in a CR.
+
+Example: Too much Milk
+2 UCLA football roomates
+
+Problem; They like milk.
+Told: Buy 1 gallon of milk at a time.
+
+Solution #1
+Leave a note to buy milk
+Remove a note when have milk
+Rule: If no milk *missing data*
+
+Algorithm
+1.If(no milk){
+2.  	if (no Note){
+3.		leave a note
+4.		buy milk/come home
+5.		remove note
+	}
+ }
+
+Sequence of events
+A: 1, 2
+B: 1
+A: 3,
+B: 3,
+
+Result: Too much milk
+
+Solution #2
+1. Use labeled notes
+2. Leave your note on the refigerator first
+
+A
+1.leave noteA
+2. if (nonoteB)
+3.	if(nomilk)
+4.		buymilk
+5.remove noteA
+
+B
+1.leave noteB
+2.if (nonoteA)
+3.	if(nomilk)
+4.		buymilk
+5.remove noteB
+
+Sequence of Events
+A: 1 -> off to bathroom
+B: 1 ,2 -> off to bathroom
+A: 2, 5 -> off to class
+B: 5 -> off to class
+
+Result: No milk.
+
+Solution #3 - one waits
+A - same as solution#2
+1.leave noteA
+2. if (nonoteB)
+3.	if(nomilk)
+4.		buymilk
+5.remove noteA
+
+B
+1.leave noteB
+2.while (noteA);
+3.if (nomilk)
+4.	buy milk
+5.remove note B
+
+Sequence of Events
+A: 1 -> goes off somewhere
+B: 1, 2 (stuck in the while loop).
+A: 2, 5
+B: 2,3,4,5
+
+Result: this always works
+2 Problems:
+1. Code is different for each student.
+2. Busy Waiting (not wrong but a waste of CPU time)
+
+Goal: Solve these 2 problems but still be correct.
+
+Need: higher-level atomic
+	(in software)	primitive
+We can only use hardware atomic operations
+
+Hardware Atomic Operations
+1. Assignment		i = 10;
+			print i;
+2. Test & Set Lock (TSL)
+  a. Read a memory address & copies the value into a CPU register
+  b. Sets the address to a non-zero value.
+  c. Checks the original value (in register)
+	if value == 0, thread may proceed.
+	if value != 0, thread may not proceed.
+3. Disable interrupts
+  We "own" the CPU until... 
+	1. Restore interrupts
+	2. Voluntarily give up CPU
+
+Higher-level Primitive #1 lock
+Metaphor: Locking a door with only 1 key.
+Once a door is locked no one else can get in.
+Only the entity that locked the lock, is allowed to unlcock the lock.
+
+2 Operations Needed
+Acquire: "I locked an unlocked door"
+Release: "I unlock the door I locked"
+
+Solution #4: Use a lock (shared resource)
+
+Lock milkLock;
+Algorithm
+	milkLock.Acquire(); ] atomic
+		if (noMilk)
+			buy milk;
+	milkLock.release(); ] atomic
+
++ it works
++ all threads ahve the smae code
+Questions: Busy waiting or not?
+
+Lock Implementation
+Use interrupts
+	disable, restore
+To make a lock operation atomic:
+	Turn off interrupts (disables the scheduler)
+	Perform the lock operation.
+	Restore interrupts.
+
+Nachos interrupt Class
+Already exists.
+A global kernal variable called "interrrupt"
+To disable:
+int old = interrupt->SetLevel(IntOff);
+To restore:
+interrupt->SetLevel(old);
+
+Need Sleep/Wakeup mechanism
+Sleep:  A thread "state" where it cannot gain access to the CPU 
+		on its own
+		by the CPU scheduler
+Wakeup: The event, a sleeping thread has been waiting for, has occurred.
+
+Sleep implementation:
+For a thread to gain access to the CPU
+	it must be in the Ready Queue
+	it must be in the Ready State
+
+Goal #1: remove a thread from the ReadyQUeue
+	Nachos: currentThread is a Thread object pointer
+		Points to thread in CPU.
+Nachos thread class has a Sleep() method.
+	removes a thread from the CPU
+	removes a thread from the ReadyQueue
+currentThread->Sleep();
+
+Goal #2: Find sleeping threads
+	We use a separate queue to store sleeping threads.
+		Specific to each lock.
+	Add a "wait" queue to the Bachos lock class.
+	BEFORE going to sleep add myself to the lock's wait queue.
+
+Wakeup Implemenatation:
+Wakeup 1 sleeping thread.
+Give this 1 thread ownership of the lock.
+Put the thread in the readyQueue in the ReadyState
+scheduler->ReadyToRun(thread pointer);
+Locks have 2 states
+	FREE - available
+	BUSY - not available
+ThreadsDir
+sync.h
+sync.cc
+void Lock::Acquire(){
+	// disable interrupts
+	if ("I'm the lock owner?"){
+		// I already own it
+		// restore interrupts and return
+	}
+	if ("lock available"){
+		// make it BUSY
+		// make myself the lock owner
+	}else{	// lock is busy
+		// Add myself to the lock wait Queue
+		// Put Myself to Sleep
+	}
+	// restore interrupts
+}
+
+void Lock::Release(){
+	// disable interrupts
+	if ("this thread is not the lockowner")
+		// print error msg, restore interrupts and return
+	if ("a thread is waiting"){
+		// wakeup 1 thread
+		// Remove 1 thread from lock's wait queue
+		// Put them on Ready Queue
+		// Make them the lock owner
+	}else{	// No thread waiting
+		// make lock available
+		// clear lock ownership 
+	}
+	// restore interrupts
+}
