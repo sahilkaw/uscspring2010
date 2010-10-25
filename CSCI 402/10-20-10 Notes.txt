@@ -1,0 +1,4 @@
+Check out policies of things like clock/2ndchance/multiplealgorithms/LRU for 2nd midterm
+client server model on midterm
+
+pointers to char arrays can be validated but numbers cannot be.

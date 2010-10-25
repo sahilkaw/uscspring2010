@@ -1,0 +1,3 @@
+step 3 dont do readadd or bitmap  find
+
+populate IPT function in exception.cc
