@@ -1,0 +1,180 @@
+Full Name: Niels-David Yogi
+StudentID: 5568504027
+
+What have I done: 
+phase 1 - completed
+phase 2 - completed
+phase 3 - completed
+70% is beejs.
+30% is mines.
+
+Code files:
+Branch.c [Actually a .cpp file named .c]
+	Creates 3 threads running this code each with its own unique id.
+	Opens a branch#.txt where # is the id number.
+	Stores car name and prices in a double array.
+	Creates a TCP connection to the Database and sends the car name with price.
+	Closes TCP connection to database.
+	Creates a TCP connection and waits for a packet.
+	When it receives a packet it checks if they have the car and sends to the sender the price.
+	Closes TCP connection when 2 users/clients leave.
+Database.c [Actually a .cpp file named .c]
+	Creates a TCP connection waiting for multiple clients to connect to it.
+	Saves the data car, price and branch number.
+	Closes TCP connection when three Branches/clients disconnect from it.
+	Creates a UDP socket and waits for a packet.
+	When queried for a car, returns to user the branch id if the car exists in their database.
+	Closes UDP socket when 2 users/clients  send "done" message.
+User.c [Actually a .cpp file named .c]
+	Creates a UDP socket to send messages to the database.
+	Queries the database with a car and gets the branch id in response and saves the information.
+	Closes UDP socket when done sending all queries.
+	Create TCP connections with all 3 branches.
+	Query specific branches about cars's price with a car name according to the information we just got from the UDP packet sending.
+	Close TCP connections with all 3 branches.
+makefile
+	Call 'gmake' in the terminal and it builds the object files: Branch, Database, User
+
+Run:
+	Open 3 windows.
+	window 1:
+	gmake
+	Database
+
+	window 2:
+	Branch
+
+	window 3:
+	User
+
+Message Format:
+	Phase 1:
+		'id'				state branch id
+		'carName-price'		car data
+		'0'					acknowledgement
+	Phase 2:
+		'userid-carName'	user id and car name
+		'branchid'			return branch id
+	Phase 3:
+		'UserId-carName'	car query
+		'cost'				car price
+
+Idiosyncrasy:
+	Sometimes the IP isnt printed out; It appears as 0.0.0.0.
+	But the program runs sending and receiving messages.
+
+Reused Code:
+	Like i mentioned before. Look for the beejs comments and my comments may be inside those.
+	70% is beejs. 
+	// beejs-start
+	// beejs-end
+	30% is mines.
+	// mines-start
+	// mines-end
+
+Output:
+	Branch:
+		Branch 1 has TCP port 52246 and IP address 0.0.0.0.
+		Branch 1 is now connected to the database.
+		Branch 3 has TCP port 52248 and IP address 0.0.0.0.
+		Branch 2 has TCP port 52247 and IP address 0.0.0.0.
+		Branch 3 is now connected to the database.
+		Branch 2 is now connected to the database.
+		Branch 1 has sent Honda Accord to the database.
+		Branch 2 has sent Toyota Prius to the database.
+		Branch 3 has sent Lamborghini Murcielago to the database.
+		Branch 1 has sent Toyota Prius to the database.
+		Branch 2 has sent Toyota Camry to the database.
+		Branch 3 has sent Aston Martin DB9 to the database.
+		Branch 2 has sent BMW X3 to the database.
+		Branch 1 has sent Chevy Aveo to the database.
+		Branch 2 has sent BMW 550 to the database.
+		Branch 3 has sent Mercedes SLR to the database.
+		Branch 2 has sent Honda Civic to the database.
+		Branch 1 has sent Jeep Grand Cherokee to the database.
+		Updating the database is done for Branch 2.
+		Branch 3 has sent Pagani Zonda to the database.
+		End of Phase 1 for Branch 2.
+		Branch 1 has sent Ford Focus to the database.
+		Branch 3 has sent Bentley Continental GT to the database.
+		Updating the database is done for Branch 1.
+		Updating the database is done for Branch 3.
+		End of Phase 1 for Branch 1.
+		Branch 2 has TCP port 21327 and IP address 68.181.201.3 for Phase 3.
+		End of Phase 1 for Branch 3.
+		Branch 1 has TCP port 21227 and IP address 68.181.201.3 for Phase 3.
+		Branch 3 has TCP port 21427 and IP address 68.181.201.3 for Phase 3.
+		Branch 1 received query for Toyota Prius from User 1
+		Branch 1 sent the price of Toyota Prius to User 1.
+		Branch 2 received query for Toyota Camry from User 1
+		Branch 2 sent the price of Toyota Camry to User 1.
+		Branch 3 received query for Mercedes SLR from User 1
+		Branch 3 sent the price of Mercedes SLR to User 1.
+		Branch 3 received query for Pagani Zonda from User 2
+		Branch 3 sent the price of Pagani Zonda to User 2.
+		Branch 3 received query for Aston Martin DB9 from User 2
+		Branch 3 sent the price of Aston Martin DB9 to User 2.
+		Branch 3 received query for Lamborghini Murcielago from User 2
+		Branch 3 sent the price of Lamborghini Murcielago to User 2.
+		End of Phase 3 for the Branch 2.
+		End of Phase 3 for the Branch 1.
+		End of Phase 3 for the Branch 3.
+	Database:
+		The central database has TCP port 20788 and IP address 255.59.0.0.
+		Received the car list from Branch 2.
+		Received the car list from Branch 1.
+		Received the car list from Branch 3.
+		End of Phase 1 for the database.
+		The central database has UDP port 3427 and IP address 68.181.201.3.
+		Sent branch info about Toyota Prius to User 1.
+		Sent branch info about Toyota Camry to User 1.
+		Sent branch info about Pagani Zonda to User 2.
+		Sent branch info about Mercedes SLR to User 1.
+		Sent branch info about Aston Martin DB9 to User 2.
+		Sent branch info about Lamborghini Murcielago to User 2.
+		End of Phase 2 for the database.
+	User:
+		User 1 has UDP port 47806 and IP address 68.181.201.3.
+		Checking Toyota Prius in the database.
+		Received location info of Toyota Prius from the database
+		Checking Toyota Camry in the database.
+		User 2 has UDP port 47807 and IP address 68.181.201.3.
+		Checking Pagani Zonda in the database.
+		Received location info of Toyota Camry from the database
+		Checking Mercedes SLR in the database.
+		Received location info of Pagani Zonda from the database
+		Checking Aston Martin DB9 in the database.
+		Received location info of Mercedes SLR from the database
+		Completed car queries to the database from User 1.
+		Received location info of Aston Martin DB9 from the database
+		End of Phase 2 for User 1.
+		Checking Lamborghini Murcielago in the database.
+		Received location info of Lamborghini Murcielago from the database
+		Completed car queries to the database from User 2.
+		End of Phase 2 for User 2.
+		User 1 is now connected to Branch 1.
+		User 2 is now connected to Branch 1.
+		User 1 is now connected to Branch 2.
+		User 2 is now connected to Branch 2.
+		User 1 is now connected to Branch 3.
+		User 1 has TCP port 52252 and IP address 68.181.201.3.
+		User 1 has TCP port 52254 and IP address 68.181.201.3.
+		User 1 has TCP port 52256 and IP address 68.181.201.3.
+		Sent a query for Toyota Prius to Branch 1.
+		User 2 is now connected to Branch 3.
+		Toyota Prius in Branch 1 with price 80.
+		Sent a query for Toyota Camry to Branch 2.
+		Toyota Camry in Branch 2 with price 75.
+		Sent a query for Mercedes SLR to Branch 3.
+		Mercedes SLR in Branch 3 with price 870.
+		End of Phase 3 for User 1.
+		User 2 has TCP port 52253 and IP address 68.181.201.3.
+		User 2 has TCP port 52255 and IP address 68.181.201.3.
+		User 2 has TCP port 52257 and IP address 68.181.201.3.
+		Sent a query for Pagani Zonda to Branch 3.
+		Pagani Zonda in Branch 3 with price 1200.
+		Sent a query for Aston Martin DB9 to Branch 3.
+		Aston Martin DB9 in Branch 3 with price 980.
+		Sent a query for Lamborghini Murcielago to Branch 3.
+		Lamborghini Murcielago in Branch 3 with price 1150.
+		End of Phase 3 for User 2.
