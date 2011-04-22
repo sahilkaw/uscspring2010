@@ -1,7 +1,3 @@
-/*
-** client.c -- a stream socket client demo
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,7 +8,6 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <list>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -22,18 +17,14 @@
 #define TCP_PORT "3327"		// the port branch will be connecting to 
 #define TCP_PORT1 "21227"	// the tcp port user will be connecting to 
 #define TCP_PORT2 "21327"	// the tcp port user will be connecting to 
-#define TCP_PORT3 "21627"	// the tcp port user will be connecting to 
+#define TCP_PORT3 "21427"	// the tcp port user will be connecting to 
 
-#define TOTAL_USERS 2		// 
+#define TOTAL_USERS 2		// Max number of users
 #define MAXDATASIZE 100		// max number of bytes we can get at once 
 #define BACKLOG 10			// how many pending connections queue will hold
+#define MAXCARS 30			// Max number of cars
 
 using namespace std;
-
-struct Car{
-	string szName;
-	int iModel;
-};
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -54,10 +45,11 @@ int main(int argc, char *argv[])
     int rv;
     char s[INET6_ADDRSTRLEN];
 	int m_iBranchId = 1, m_iMaxBranches = 3;
-	list <Car> listOfCars = list <Car>();
 	bool bDebugPhaseOne = false,
-		 bDebugPhaseTwo = true,
-		 bDebugPhaseThree = true;
+		 bDebugPhaseThree = false;
+
+	string cars[30][2];
+	int iCarCount = 0;
 
 	// Lets create all of our branches.
 	for (int i = 2; i <= m_iMaxBranches; i++)
@@ -70,6 +62,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// initialize the array
+	// 0 is the car, 1 is the price
+	for (int i = 0; i < MAXCARS; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			cars[i][j] = "";
+		}
+	}
 	/* Phase 1 
 		In this phase, the three car rental branches open their input file (branch1.txt, or branch2.txt
 	or branch3.txt) and send the make and the model of the cars to the central database. More
@@ -103,39 +104,52 @@ int main(int argc, char *argv[])
 	sprintf(infile, "branch%i.txt", m_iBranchId);
 	ifstream inputFile(infile);
 
-	bool bIsString = true;
 	while (!inputFile.eof())
 	{
-		int iNumber = -1;
-		string szName;
-		char tempName[256];
-		stringstream out;
+		// temp vars
+		char lineName[256];
 		stringstream sstr;
-		inputFile.getline(tempName, 256);
+		string str;
+		size_t found;
 
-		if (strlen(tempName) > 3)			// Length > 3 a#1  is smallest string + \n so 4
+		// get the line
+		inputFile.getline(lineName, 256);
+		sstr << lineName;
+		str = sstr.str();
+		sstr.clear();		
+
+		// Find and replace: newline, return, escape
+		found=str.find('\n');	// newline
+		if (found!=string::npos)
+			str.replace(str.find('\n'),1,"");
+		found=str.find('\r');	// return
+		if (found!=string::npos)
+			str.replace(str.find('\r'),1,"");
+		found=str.find('\e');	// escape
+		if (found!=string::npos)
+			str.replace(str.find('\e'),1,"");
+
+		if (str.length() > 3) // a#1 is smallest string
 		{
-			char * pch;
-			pch = strtok (tempName,"#\n");
-			Car theCar = Car();
-			int iCounter = 0;
-			while (pch != NULL)
-			{
-				if (bDebugPhaseOne)
-					printf ("Debug: %s\n",pch);
-				if (iCounter == 0){
-					sstr << pch;
-					theCar.szName = sstr.str();
-				}
-				else
-					theCar.iModel = atoi(pch);
-				iCounter++;
-				pch = strtok (NULL, "#\n");
-			}
-			listOfCars.push_back(theCar);
+			// temp vars
+			string strA, strB;
+
+			// get the two vars: car & price
+			found = str.find('#');
+			strA = str.substr (0, found); 
+			strB = str.substr (found + 1, str.length()); 
+
+			if (bDebugPhaseOne)
+				printf("DEBUG: %s - %s.\n",strA.c_str(),strB.c_str());
+
+			// assign car values
+			cars[iCarCount][0] = strA;
+			cars[iCarCount][1] = strB;
+			iCarCount++;
 		}
 	}
 
+	// beejs-start
 	// Open a TCP connection with the central database
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -168,7 +182,6 @@ int main(int argc, char *argv[])
     }
 
 	// Event - Upon startup of Phase 1: <Branch#> has TCP port … and IP address …
-	char *ipver;
 	void* addr;
 	struct sockaddr address;
 	unsigned short port;
@@ -182,47 +195,49 @@ int main(int argc, char *argv[])
 		struct sockaddr_in *ipv4 = (struct sockaddr_in *)&address;
 		port = ntohs(ipv4->sin_port);
 		addr = &(ipv4->sin_addr);
-		ipver = "IPv4";
 	}
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)&address;
 		port = ntohs(ipv6->sin6_port);
 		addr = &(ipv6->sin6_addr);
-		ipver = "IPv6";
 	}
-
 	inet_ntop(p->ai_family, addr,s, sizeof s);
 	printf("Branch %d has TCP port %d and IP address %s.\n", m_iBranchId, port , s);
 
 	freeaddrinfo(servinfo); // all done with this structure
 
 	// Event - Upon establishing a TCP connection to the database: <Branch#> is now connected to the database.
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof s);
     printf("Branch %d is now connected to the database.\n", m_iBranchId);
+	// beejs-end
 
-	// Event - Sending a car’s make and model to the central database: <Branch#> has sent <car> to the database.
+	// main loops for phase 1
 	unsigned int byte_count;
 	char cBranchID[2];
+	// send branch id
 	sprintf(cBranchID, "%i", m_iBranchId);
 	if (send(sockfd, cBranchID, 1, 0) == -1)	// send branch id
 		perror("send");
 	byte_count = recv(sockfd, buf, sizeof buf, 0); // block until response received
-	buf[byte_count] = '\0';
-	for (list<Car>::iterator it = listOfCars.begin(); it != listOfCars.end(); it++)
+	for (int i = 0; i < iCarCount; i++)
 	{
-		char cMessage[256];
-		sprintf(cMessage, "%s#%i", it->szName.c_str(),it->iModel);
-		if (send(sockfd, cMessage, sizeof(cMessage), 0) == -1)
+		// temp vars
+		char message[256];
+		string szCar, szPrice;
+		szCar = cars[i][0];
+		szPrice = cars[i][1];
+
+		// Message sending and receiving
+		// Event - Sending a car’s make and model to the central database: <Branch#> has sent <car> to the database.
+		printf("Branch %i has sent %s to the database.\n", m_iBranchId, szCar.c_str());
+		sprintf(message, "%s,%s", szCar.c_str(), szPrice.c_str());
+		if (send(sockfd, message, sizeof(message), 0) == -1)
 			perror("send");
 		if (bDebugPhaseOne)
-			printf("DEBUG: Message %s - %i.\n",it->szName.c_str(),it->iModel);
+			printf("DEBUG: Message %s - %s.\n", szCar.c_str(), szPrice.c_str());
 		byte_count = recv(sockfd, buf, sizeof buf, 0); // block until response received
-		buf[byte_count] = '\0';
 	}
 
-	if (send(sockfd, "", 0, 0) == -1)	// send empty meassage to let them know we are done.
-		perror("send");
 	// Event - Upon sending all the cars’ make and model to the central database: Updating the database is done for <Branch#>
 	printf("Updating the database is done for Branch %d.\n",m_iBranchId);
 	close(sockfd);
@@ -250,7 +265,7 @@ int main(int argc, char *argv[])
     fd_set read_fds;  // temp file descriptor list for select()
     int fdmax;        // maximum file descriptor number
 
-    int newfd;        // newly accept()ed socket descriptor
+    int newfd;        // newly accepted socket descriptor
 	struct sockaddr_storage remoteaddr; // client address
     socklen_t addrlen;
 
@@ -260,6 +275,7 @@ int main(int argc, char *argv[])
     char remoteIP[INET6_ADDRSTRLEN];
 	struct addrinfo *ai;
 
+	// beejs-start
 	// Setup the IP and Port for this central database.
 	FD_ZERO(&master);    // clear the master and temp sets
     FD_ZERO(&read_fds);
@@ -329,14 +345,12 @@ int main(int argc, char *argv[])
 		struct sockaddr_in *ipv4 = (struct sockaddr_in *)&address;
 		port = ntohs(ipv4->sin_port);
 		addr = &(ipv4->sin_addr);
-		ipver = "IPv4";
 	}
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)&address;
 		port = ntohs(ipv6->sin6_port);
 		addr = &(ipv6->sin6_addr);
-		ipver = "IPv6";
 	}
 
 	inet_ntop(p->ai_family, addr,s, sizeof s);
@@ -406,41 +420,54 @@ int main(int argc, char *argv[])
                         close(i); // bye!
                         FD_CLR(i, &master); // remove from master set
                     } else {
+						// mines-start
                         // we got some data from a client
-						buf[nbytes] = '\0';
-						int iUser= -1;
-						string szCarName;
-						char * pch;
+						// Message format: UserId-carName
+						string szUser, szCarName;
 						stringstream sstr;
+						string str;
+						size_t found;
 
-						pch = strtok (buf,"#\n");
-						iUser = atoi(pch);
-						pch = strtok (NULL,"#\n");
-						sstr << pch;
-						szCarName = sstr.str();
-			
-						if (iUser < 1 || iUser > 3)
+						// convert buffer to string
+						buf[nbytes] = '\0';
+						sstr << buf;
+						str = sstr.str();
+	
+						// get the two vars: user & carName
+						found = str.find('-');
+						szUser = str.substr (0, found); 
+						szCarName = str.substr (found + 1, str.length()); 
+
+						// make sure userid is between 1-3
+						if (atoi(szUser.c_str()) < 1 || atoi(szUser.c_str()) > 3)
 							continue;
+
 						// Event - Upon receiving a car’s make and model from a user: <Branch#> received query for <car> from <User#>
-						printf("Branch %i received query for %s from User %i\n", m_iBranchId, szCarName.c_str(), iUser);
+						printf("Branch %i received query for %s from User %s\n", m_iBranchId, szCarName.c_str(), szUser.c_str());
 
 						//get cost
-						int iCost = -1;
-						for (list<Car>::iterator it = listOfCars.begin(); it != listOfCars.end(); it++)
+						string szCost;
+						for (int j = 0; j < iCarCount; j++)
 						{
-							if (szCarName.compare(it->szName) == 0){
-								iCost = it->iModel;
+							// temp vars
+							char message[256];
+							string szCar, szPrice;
+							szCar = cars[j][0];
+							szPrice = cars[j][1];
+
+							// Message sending and receiving
+							if (szCarName.compare(szCar) == 0){
+								szCost = szPrice;
 								break;
 							}
 						}
 
 						// Send acknowledgement
 						// Event - Sending the price of a car to a user: <Branch#> sent the price of <car> to <User#>
-						printf("Branch %i sent the price of %s to User %i.\n", m_iBranchId, szCarName.c_str(), iUser);
-						char cCostmessage[10];
-						sprintf(cCostmessage, "%i", iCost);
-						if (send(i, cCostmessage, sizeof(cCostmessage), 0) == -1)
+						printf("Branch %i sent the price of %s to User %s.\n", m_iBranchId, szCarName.c_str(), szUser.c_str());
+						if (send(i, szCost.c_str(), sizeof(szCost.c_str()), 0) == -1)
 							perror("send");
+						// mines-end
                     }
                 } // END handle data from client
             } // END got new incoming connection
@@ -449,9 +476,9 @@ int main(int argc, char *argv[])
 
 	FD_ZERO(&master);    // clear the master and temp sets
     FD_ZERO(&read_fds);
+	// beejs-end
 
-	
-	// Event - End of Phase 1: End of Phase 1 for the database
-	printf("End of Phase 3 for the Branch %.\n");
+	// Event - End of Phase 3: End of Phase 3 for the Branch#
+	printf("End of Phase 3 for the Branch %i.\n", m_iBranchId);
     return 0;
 }
